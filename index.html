@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#100d0d" />
+  <title>Pizzaria da Morte — Turno da Meia-noite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+  <main id="game" aria-label="Pizzaria da Morte, jogo de terror em primeira pessoa">
+    <canvas id="scene"></canvas>
+    <div id="grain"></div><div id="vignette"></div>
+    <section id="menu" class="screen visible">
+      <div class="menu-top"><span class="brand-mark">PD<span>✳</span></span><span class="status-pill"><i></i> TURNO NOTURNO · 01:00</span></div>
+      <div class="menu-copy">
+        <p class="eyebrow">BEM-VINDO DE VOLTA, FUNCIONÁRIO</p>
+        <h1>PIZZARIA<br><em>DA MORTE</em></h1>
+        <p class="tagline">A massa é fresca. Os funcionários, nem tanto.</p>
+        <div class="menu-actions">
+          <button class="primary" id="new-game"><span>COMEÇAR TURNO</span><b>↗</b></button>
+          <button class="menu-button" id="continue-game">CONTINUAR <small id="continue-label">— SEM TURNO SALVO</small></button>
+          <button class="menu-button" id="settings-button">CONFIGURAÇÕES <span>＋</span></button>
+          <button class="menu-button" id="credits-button">CRÉDITOS <span>＋</span></button>
+        </div>
+        <div class="menu-footer"><span>© 1987 — SABOR QUE ASSOMBRA</span><span>VERSÃO 1.0.7</span></div>
+      </div>
+      <div class="poster"><div class="poster-glow"></div><div class="poster-stars">✦ &nbsp; ✦ &nbsp; ✦</div><div class="poster-bear">◉</div><div class="poster-ribbon">DIVERSÃO PARA TODA A FAMÍLIA</div><div class="poster-caption">“AINDA ESTAMOS<br>ABERTOS.”</div><span class="poster-stamp">DESDE<br><b>1987</b></span></div>
+      <div class="menu-note">AVISO: A GERÊNCIA NÃO SE RESPONSABILIZA POR<br>PERDAS DE MEMBROS DURANTE O EXPEDIENTE.</div>
+    </section>
+    <section id="settings-panel" class="modal hidden"><button class="close-modal">×</button><p class="eyebrow">PREFERÊNCIAS</p><h2>CONFIGURAÇÕES</h2><label>VOLUME <input id="volume" type="range" min="0" max="100" value="55"></label><label>SENSIBILIDADE <input id="sensitivity" type="range" min="30" max="150" value="85"></label><button class="primary modal-done">SALVAR PREFERÊNCIAS <b>↗</b></button></section>
+    <section id="credits-panel" class="modal hidden"><button class="close-modal">×</button><p class="eyebrow">EXPEDIENTE NOTURNO</p><h2>CRÉDITOS</h2><p>Uma experiência original de terror em primeira pessoa.<br>Concebida, construída e assombrada por você.</p><p class="muted">TODOS OS SETE ANIMATRÔNICOS SÃO MECÂNICOS.<br>NENHUMA PIZZA FOI FERIDA NA PRODUÇÃO.</p><button class="primary modal-done">VOLTAR <b>↗</b></button></section>
+    <section id="hud" class="hidden">
+      <div class="hud-top"><div class="location"><span class="live-dot"></span><span id="room-name">ESCRITÓRIO DE SEGURANÇA</span></div><div class="night-info"><span>NOITE <b id="night-num">01</b></span><strong id="clock">01:00 AM</strong></div></div>
+      <div class="crosshair"><i></i><b></b></div>
+      <div class="hud-bottom"><div class="power-card"><span class="small-label">ENERGIA DO PRÉDIO</span><div class="power-row"><b id="power-value">100</b><span>%</span><div class="power-track"><i id="power-bar"></i></div></div><div class="power-sub"><span id="usage-label">CONSUMO</span><div class="usage-bars"><i></i><i></i><i></i><i></i></div></div></div><div class="hint" id="hint"><kbd>W A S D</kbd> MOVER <span>·</span> <kbd>MOUSE</kbd> OLHAR <span>·</span> <kbd>E</kbd> INTERAGIR <span>·</span> <kbd>F</kbd> LANTERNA <span>·</span> <kbd>C</kbd> CÂMERAS</div><div class="objective"><span class="small-label">OBJETIVO</span><b>SOBREVIVA ATÉ 06:00</b></div></div>
+      <div class="prompt hidden" id="prompt"><kbd>E</kbd><span>INTERAGIR</span></div>
+      <div id="toast" class="toast hidden"></div>
+      <div id="camera-ui" class="camera-ui hidden"><div class="camera-title"><span>▣ REDE DE CÂMERAS</span><button id="close-cameras">FECHAR <kbd>C</kbd></button></div><div class="camera-content"><div class="camera-map" id="camera-map"><div class="map-lines"></div><span class="map-label">PLANTA · PIZZARIA</span></div><div class="camera-feed"><div class="feed-head"><b id="cam-name">CAM 01 — PALCO</b><span><i class="live-dot"></i> AO VIVO</span></div><div class="feed-visual" id="feed-visual"><div class="scanlines"></div><div class="feed-subjects" id="feed-subjects"></div><span class="feed-time" id="feed-time">01:00:00</span><span class="signal">REC ●</span></div><div class="feed-footer"><span id="cam-description">PALCO PRINCIPAL · SETOR A</span><span>SINAL: <b>INSTÁVEL</b></span></div></div></div><div class="camera-legend">CLIQUE EM UM SETOR PARA TROCAR A CÂMERA <span>FECHAR MONITOR: C</span></div></div>
+      <div id="door-state" class="door-state hidden">PORTA <b>FECHADA</b> <span>Q</span></div>
+    </section>
+    <section id="overlay" class="screen hidden"><div class="result-card"><p class="eyebrow" id="result-eyebrow">FIM DE TURNO</p><h2 id="result-title">VOCÊ SOBREVIVEU.</h2><p id="result-text">A pizzaria está segura. Por enquanto.</p><button class="primary" id="return-menu">VOLTAR AO MENU <b>↗</b></button></div></section>
+    <div id="pause" class="pause hidden"><div><span class="eyebrow">PAUSA</span><h2>O SILÊNCIO<br>É SUSPEITO.</h2><button class="primary" id="resume">RETOMAR TURNO <b>↗</b></button><button class="text-action" id="quit-game">ABANDONAR TURNO</button></div></div>
+    <div class="corner-id">PD_MORTE.EXE <span>●</span></div>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
